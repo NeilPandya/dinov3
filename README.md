@@ -2,6 +2,17 @@
 
 # DINOv3 🦖🦖🦖
 
+## About this fork
+
+This is my (@NeilPandya)'s fork for cross-platform training on consumer-grade desktop hardware and inference on edge devices.
+At the time of writing, the training platform is:
+* [AMD Ryzen 9 5950X](https://www.amd.com/en/products/processors/desktops/ryzen/5000-series/amd-ryzen-9-5950x.html#product-specs)
+* [NVIDIA RTX 3090 FE](https://www.nvidia.com/en-us/geforce/graphics-cards/30-series/rtx-3090-3090ti/)
+
+The two platforms used for inference are:
+* [Raspberry Pi 5 + AI HAT+ (Hailo-8 NPU)](https://www.raspberrypi.com/documentation/accessories/ai-hat-plus.html)
+* [NVIDIA Jeston Nano 2GB](https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-2gb-devkit)
+
 **[Meta AI Research, FAIR](https://ai.meta.com/research/)**
 
 Oriane Siméoni, Huy V. Vo, Maximilian Seitzer, Federico Baldassarre, Maxime Oquab, <br/>
