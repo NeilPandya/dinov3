@@ -4,7 +4,7 @@
 
 ## About this fork
 
-This is my (@NeilPandya)'s fork for cross-platform training on consumer-grade desktop hardware and inference on edge devices.
+This is [Neil Pandya](https://github.com/NeilPandya)'s fork for cross-platform training on consumer-grade desktop hardware and inference on edge devices.
 At the time of writing, the training platform is:
 * [AMD Ryzen 9 5950X](https://www.amd.com/en/products/processors/desktops/ryzen/5000-series/amd-ryzen-9-5950x.html#product-specs)
 * [NVIDIA RTX 3090 FE](https://www.nvidia.com/en-us/geforce/graphics-cards/30-series/rtx-3090-3090ti/)
