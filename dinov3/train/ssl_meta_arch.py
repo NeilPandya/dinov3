@@ -268,8 +268,12 @@ class SSLMetaArch(nn.Module):
         distillation_cfg = OmegaConf.merge(default_cfg, distillation_cfg)
 
         assert distillation_cfg.ibot.separate_head is True
-        assert distillation_cfg.ibot.head_n_prototypes == self.cfg.ibot.head_n_prototypes
-        assert distillation_cfg.dino.head_n_prototypes == self.cfg.dino.head_n_prototypes
+        assert distillation_cfg.ibot.head_n_prototypes == self.cfg.ibot.head_n_prototypes, (
+            f"{distillation_cfg.ibot.head_n_prototypes} != {self.cfg.ibot.head_n_prototypes}"
+        )
+        assert distillation_cfg.dino.head_n_prototypes == self.cfg.dino.head_n_prototypes, (
+            f"{distillation_cfg.dino.head_n_prototypes} != {self.cfg.dino.head_n_prototypes}"
+        )
         assert distillation_cfg.student.patch_size == self.cfg.student.patch_size
 
         teacher_model_dict = dict()
@@ -307,13 +311,13 @@ class SSLMetaArch(nn.Module):
                 init_fsdp_model_from_checkpoint(
                     self.gram_teacher,
                     self.gram_ckpt,
-                    skip_load_prefixes=[
+                    skip_load_keys=[
                         "dino_head",
                         "ibot_head",
                         "dino_loss.center",
                         "ibot_patch_loss.center",
                     ],
-                    prefixes_not_sharded=["backbone.rope_embed.periods"],
+                    keys_not_sharded=["backbone.rope_embed.periods", "qkv.bias_mask"],
                     process_group=distributed.get_default_process_group(),
                 )
                 self.gram_teacher_initialized = True
@@ -326,8 +330,8 @@ class SSLMetaArch(nn.Module):
             init_fsdp_model_from_checkpoint(
                 self.student,
                 self.cfg.student.resume_from_teacher_chkpt,
-                skip_load_prefixes=["dino_loss.center", "ibot_patch_loss.center"],
-                prefixes_not_sharded=["backbone.rope_embed.periods"],
+                skip_load_keys=["dino_loss.center", "ibot_patch_loss.center"],
+                keys_not_sharded=["backbone.rope_embed.periods", "qkv.bias_mask"],
                 process_group=distributed.get_process_subgroup(),
             )
             self.model_ema.load_state_dict(self.student.state_dict())
@@ -337,7 +341,9 @@ class SSLMetaArch(nn.Module):
                 init_fsdp_model_from_checkpoint(
                     self.teacher,
                     self.cfg.distillation.checkpoint_path,
-                    skip_load_prefixes=[],
+                    skip_load_keys=["dino_loss.center", "ibot_patch_loss.center"],
+                    keys_not_sharded=["backbone.rope_embed.periods", "qkv.bias_mask"],
+                    process_group=distributed.get_default_process_group(),
                 )
             else:
                 logger.info("Init teacher to distil from, used for testing purpose only")
@@ -482,7 +488,7 @@ class SSLMetaArch(nn.Module):
 
             with torch.no_grad():
                 backbone_out = self.gram_teacher.backbone(images, is_training=True)
-            teacher_patches = backbone_out.x_norm_patchtokens  # [n_crops * B, P_T, D]
+            teacher_patches = backbone_out["x_norm_patchtokens"]  # [n_crops * B, P_T, D]
 
             # Downsample Gram teacher features if needed
             if teacher_patches.shape[1] != student_patches.shape[1]:
